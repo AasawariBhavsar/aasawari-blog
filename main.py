@@ -10,6 +10,8 @@ from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from flask_gravatar import Gravatar
 from functools import wraps
 from flask import abort
+from email_validator import validate_email
+
 
 app = Flask(__name__)
 login_manager = LoginManager()
@@ -103,7 +105,7 @@ def register():
             return redirect(url_for("login"))
 
         new_user = User(
-            email=request.form.get('email'),
+            email=validate_email(request.form.get('email')),
             name=request.form.get('name'),
             password=generate_password_hash(request.form.get('password'))
         )
@@ -120,6 +122,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit() and request.method == "POST":
         email = request.form.get("email")
+        validate_email(email)
         password = request.form.get("password")
         user = User.query.filter_by(email=email).first()
         if not user:
